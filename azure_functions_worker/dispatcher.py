@@ -27,7 +27,7 @@ from . import protos
 from .constants import (PYTHON_THREADPOOL_THREAD_COUNT,
                         PYTHON_THREADPOOL_THREAD_COUNT_DEFAULT,
                         PYTHON_THREADPOOL_THREAD_COUNT_MAX,
-                        PYTHON_THREADPOOL_THREAD_COUNT_MIN)
+                        PYTHON_THREADPOOL_THREAD_COUNT_MIN, WORKER_INDEXING)
 from .logging import disable_console_logging, enable_console_logging
 from .logging import (logger, error_logger, is_system_log_category,
                       CONSOLE_LOG_PREFIX)
@@ -269,6 +269,7 @@ class Dispatcher(metaclass=DispatcherMeta):
             constants.WORKER_STATUS: _TRUE,
             constants.RPC_HTTP_TRIGGER_METADATA_REMOVED: _TRUE,
             constants.SHARED_MEMORY_DATA_TRANSFER: _TRUE,
+            constants.WORKER_INDEXING: _TRUE
         }
 
         # Can detech worker packages only when customer's code is present
@@ -291,6 +292,18 @@ class Dispatcher(metaclass=DispatcherMeta):
         return protos.StreamingMessage(
             request_id=req.request_id,
             worker_status_response=protos.WorkerStatusResponse())
+
+    async def _handle__worker_function_metadata_request(self, req):
+        function_metadata = []
+        dummy1 = protos.WorkerFunctionMetadata(name="name", script_file="scriptfile", function_directory="functiondirectory", entry_point="entrypoint", language="python", binding_metadata=[])
+        function_metadata.append(dummy1)
+
+        return protos.StreamingMessage(
+            request_id=req.request_id,
+            worker_function_metadata_response=protos.WorkerFunctionMetadataResponse(
+                results=function_metadata,
+                status=protos.StatusResult(
+                    status=protos.StatusResult.Success)))
 
     async def _handle__function_load_request(self, req):
         func_request = req.function_load_request

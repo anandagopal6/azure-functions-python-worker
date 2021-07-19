@@ -75,6 +75,11 @@ message StreamingMessage {
     // Ask the worker to close any open shared memory resources for a given invocation
     CloseSharedMemoryResourcesRequest close_shared_memory_resources_request = 27;
     CloseSharedMemoryResourcesResponse close_shared_memory_resources_response = 28;
+
+    // Worker indexing message types
+    WorkerFunctionMetadataRequest worker_function_metadata_request = 29;
+    WorkerFunctionMetadataResponse worker_function_metadata_response = 30;
+    WorkerFunctionMetadata worker_function_metadata = 31;
   }
 }
 
@@ -262,6 +267,51 @@ message RpcFunctionMetadata {
   bool is_proxy = 7;
 }
 
+// Host tells worker it is ready to receive metadata
+message WorkerFunctionMetadataRequest {
+  // base directory for function app
+  string directory = 1;
+}
+
+// Worker sends function metadata back to host
+message WorkerFunctionMetadataResponse {
+  // list of function indexing responses
+  repeated WorkerFunctionMetadata results = 1;
+
+  // status of overall metadata request
+  StatusResult overall_status = 2;
+}
+
+// Message type that holds function metadata information
+message WorkerFunctionMetadata {
+  // function name
+  string name = 4;
+
+  // base directory for the Function
+  string directory = 1;
+
+  // Script file specified
+  string script_file = 2;
+
+  // Entry point specified
+  string entry_point = 3;
+
+  // Function id
+  string id = 11;
+
+  // Bindings info
+  repeated string bindings = 6;
+
+  // Is set to true for proxy
+  bool is_proxy = 7;
+
+  // Function indexing status
+  StatusResult status = 8;
+
+  // Function language
+  string language = 9;
+}
+
 // Host requests worker to invoke a Function
 message InvocationRequest {
   // Unique id for each invocation
@@ -278,6 +328,9 @@ message InvocationRequest {
 
   // Populates activityId, tracestate and tags from host
   RpcTraceContext trace_context = 5;
+
+  // Current retry context
+  RetryContext retry_context = 6;
 }
 
 // Host sends ActivityId, traceStateString and Tags from host
@@ -290,6 +343,18 @@ message RpcTraceContext {
 
 	// This corresponds to Activity.Current?.Tags
 	map<string, string> attributes = 3;
+}
+
+// Host sends retry context for a function invocation
+message RetryContext {
+  // Current retry count
+  int32 retry_count = 1;
+
+  // Max retry count
+  int32 max_retry_count = 2;
+
+  // Exception that caused the retry
+  RpcException exception = 3;
 }
 
 // Host requests worker to cancel invocation

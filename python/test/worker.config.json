@@ -1,8 +1,8 @@
 {
-    "description":{
-        "language":"python",
-        "extensions":[".py"],
-        "defaultExecutablePath":"python",
-        "defaultWorkerPath":"worker.py"
-    }
+  "description": {
+    "language": "python",
+    "extensions": [".py"],
+    "defaultExecutablePath": "C:/Users/t-anjanan/Documents/GitHub/azure-functions-python-worker/.env/Scripts/python.exe",
+    "defaultWorkerPath": "worker.py"
+  }
 }

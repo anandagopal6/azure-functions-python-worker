@@ -108,7 +108,6 @@ py3env/
 .pytest_cache
 
 # vscode
-.vscode
 
 # dotenv
 .env
