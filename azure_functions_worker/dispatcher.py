@@ -7,6 +7,7 @@ Implements loading and execution of Python workers.
 
 import asyncio
 import concurrent.futures
+import json
 import logging
 import os
 import queue
@@ -293,16 +294,48 @@ class Dispatcher(metaclass=DispatcherMeta):
             request_id=req.request_id,
             worker_status_response=protos.WorkerStatusResponse())
 
-    async def _handle__worker_function_metadata_request(self, req):
+    async def _handle__functions_metadata_request(self, req):
+        metadata_request = req.functions_metadata_request
+        directory = metadata_request.directory
+
         function_metadata = []
-        dummy1 = protos.WorkerFunctionMetadata(name="name", script_file="scriptfile", function_directory="functiondirectory", entry_point="entrypoint", language="python", binding_metadata=[])
-        function_metadata.append(dummy1)
+        bindings=[{
+            "authLevel": "anonymous",
+            "type": "httpTrigger",
+            "direction": "in",
+            "name": "req",
+            "methods": [
+                "get",
+                "post"
+            ]
+        },
+        {
+            "type": "http",
+            "direction": "out",
+            "name": "$return"
+        }]
+        raw_bindings = []
+        for binding in bindings:
+            raw_bindings.append(json.dumps(binding))
+        
+        dummy1_metadata = protos.RpcFunctionMetadata(
+            name="TriggerFunc",
+            directory="C:\\Users\\t-anjanan\\Documents\\PythonFunctionApp1",
+            script_file="C:\\Users\\t-anjanan\\Documents\\PythonFunctionApp1\\main.py",
+            status=protos.StatusResult(
+                    status=protos.StatusResult.Success),
+            language="python",
+            raw_bindings=raw_bindings)
+            
+        dummy1_load = protos.FunctionLoadRequest(
+            metadata=dummy1_metadata)
+        function_metadata.append(dummy1_load)
 
         return protos.StreamingMessage(
             request_id=req.request_id,
-            worker_function_metadata_response=protos.WorkerFunctionMetadataResponse(
+            function_metadata_responses=protos.FunctionMetadataResponses(
                 results=function_metadata,
-                status=protos.StatusResult(
+                overall_status=protos.StatusResult(
                     status=protos.StatusResult.Success)))
 
     async def _handle__function_load_request(self, req):
